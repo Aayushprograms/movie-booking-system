@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ movie.title }} - Details</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 900px; margin: auto; }
+    .badge { padding: 4px 10px; border-radius: 12px; background: #f1f1f1; margin-right: 6px; display:inline-block; }
+    .trailer-box { margin-top: 20px; }
+    iframe { width: 100%; height: 450px; border: 0; border-radius: 10px; }
+    .fallback { padding: 15px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; }
+    a { text-decoration: none; color: #007bff; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>{{ movie.title }}</h1>
+
+    <p><strong>Language:</strong> {{ movie.language.name }}</p>
+    <p><strong>Rating:</strong> {{ movie.rating }}</p>
+    <p><strong>Release Date:</strong> {{ movie.release_date }}</p>
+
+    <p><strong>Genres:</strong>
+      {% for g in movie.genres.all %}
+        <span class="badge">{{ g.name }}</span>
+      {% endfor %}
+    </p>
+
+    <div class="trailer-box">
+      <h2>Trailer</h2>
+
+      {% if embed_url %}
+        <!-- ✅ Lazy loading + security: sandbox + referrerpolicy -->
+        <iframe
+          loading="lazy"
+          src="{{ embed_url }}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+        ></iframe>
+      {% else %}
+        <div class="fallback">
+          Trailer not available or invalid YouTube URL.
+        </div>
+      {% endif %}
+    </div>
+
+    <br/>
+    <a href="{% url 'movie_list' %}">⬅ Back to Movies</a>
+  </div>
+</body>
+</html>

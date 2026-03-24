@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Admin Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        .header {
+            background: #1e1e2f;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 30%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .section {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h3 {
+            margin-bottom: 10px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🎬 Admin Analytics Dashboard</h1>
+</div>
+
+<div class="container">
+
+    <!-- Revenue Cards -->
+    <div class="cards">
+
+        <div class="card">
+            <h2>Daily Revenue</h2>
+            <p>₹ {{ daily_revenue }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Weekly Revenue</h2>
+            <p>₹ {{ weekly_revenue }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Monthly Revenue</h2>
+            <p>₹ {{ monthly_revenue }}</p>
+        </div>
+        <div class="section">
+    <h3>📊 Peak Booking Hours Chart</h3>
+    <canvas id="peakChart"></canvas>
+</div>
+
+<div class="section">
+    <h3>🏆 Most Popular Movies Chart</h3>
+    <canvas id="movieChart"></canvas>
+</div>
+
+    </div>
+
+    <!-- Popular Movies -->
+    <div class="section">
+        <h3>🔥 Most Popular Movies</h3>
+        <ul>
+            {% for movie in popular_movies %}
+                <li>{{ movie.movie__title }} ({{ movie.total }} bookings)</li>
+            {% empty %}
+                <li>No data available</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Peak Hours -->
+    <div class="section">
+        <h3>⏰ Peak Booking Hours</h3>
+        <ul>
+            {% for hour in peak_hours %}
+                <li>{{ hour.hour }}:00 - {{ hour.total }} bookings</li>
+            {% empty %}
+                <li>No data available</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Cancellation Rate -->
+    <div class="section">
+        <h3>❌ Cancellation Rate</h3>
+        <p style="font-size: 24px; color: red;">
+            {{ cancellation_rate }} %
+        </p>
+    </div>
+    <div class="section">
+    <h3>🏆 Busiest Movies</h3>
+    <ul>
+        {% for movie in busiest_movies %}
+            <li>{{ movie.movie__title }} ({{ movie.total }} seats)</li>
+        {% endfor %}
+    </ul>
+</div>
+
+</div>
+<script>
+    const peakHours = {{ peak_hours|safe }};
+    const popularMovies = {{ popular_movies|safe }};
+
+    // Peak Hours Chart
+    new Chart(document.getElementById("peakChart"), {
+        type: "bar",
+        data: {
+            labels: peakHours.map(x => x.hour + ":00"),
+            datasets: [{
+                label: "Bookings",
+                data: peakHours.map(x => x.total)
+            }]
+        }
+    });
+
+    // Popular Movies Chart
+    new Chart(document.getElementById("movieChart"), {
+        type: "bar",
+        data: {
+            labels: popularMovies.map(x => x.movie__title),
+            datasets: [{
+                label: "Bookings",
+                data: popularMovies.map(x => x.total)
+            }]
+        }
+    });
+</script>
+</body>
+</html>

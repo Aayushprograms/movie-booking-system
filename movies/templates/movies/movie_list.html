@@ -1,0 +1,178 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie List</title>
+</head>
+
+<body>
+
+<h1>Movies</h1>
+
+<!-- FILTER FORM -->
+<form id="filterForm">
+
+    <!-- LANGUAGE FILTER -->
+    <h3>Filter by Language</h3>
+    <select name="language" id="language">
+        <option value="">All Languages</option>
+
+        {% for language in all_languages %}
+            <option value="{{ language.name }}"
+                {% if language.name == selected_language %}selected{% endif %}>
+                {{ language.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <!-- GENRE FILTER -->
+    <h3>Filter by Genre</h3>
+
+    {% for genre in all_genres %}
+        <label>
+            <input type="checkbox"
+                   class="genre-filter"
+                   value="{{ genre.name }}"
+                   {% if genre.name in selected_genres %}checked{% endif %}>
+            {{ genre.name }}
+           {{ genre_count_dict|get_item:genre.name|default:0 }}
+        </label>
+        <br>
+    {% endfor %}
+
+    <br>
+
+    <!-- SORTING -->
+    <h3>Sort By</h3>
+
+    <select name="sort" id="sort">
+        <option value="">Default</option>
+
+        <option value="rating"
+        {% if sort_by == "rating" %}selected{% endif %}>
+            Rating
+        </option>
+
+        <option value="release_date"
+        {% if sort_by == "release_date" %}selected{% endif %}>
+            Release Date
+        </option>
+    </select>
+
+    <br><br>
+
+    <button type="button" onclick="applyFilters()">
+        Apply Filters
+    </button>
+
+</form>
+
+<hr>
+
+<!-- MOVIE LIST CONTAINER -->
+<div id="movie-list">
+
+{% for movie in page_obj %}
+
+    <h3>{{ movie.title }}</h3>
+
+    <p>Language: {{ movie.language.name }}</p>
+    <p>Rating: {{ movie.rating }}</p>
+    <p>Release Date: {{ movie.release_date }}</p>
+
+    <p>
+        Genres:
+        {% for genre in movie.genres.all %}
+            {{ genre.name }}
+        {% endfor %}
+    </p>
+
+    <hr>
+
+{% empty %}
+    <p>No movies found.</p>
+{% endfor %}
+
+</div>
+
+<!-- PAGINATION -->
+<div>
+
+{% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">
+        Previous
+    </a>
+{% endif %}
+
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+{% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">
+        <a href="?page={{ page_obj.next_page_number }}">
+            Next
+        </a>
+    </a>
+{% endif %}
+
+</div>
+
+<!-- JAVASCRIPT AJAX FILTERING -->
+<script>
+
+function applyFilters() {
+
+    let language = document.getElementById("language").value;
+
+    let sort = document.getElementById("sort").value;
+
+    let genreElements = document.querySelectorAll(".genre-filter");
+
+    let genres = [];
+
+    genreElements.forEach(el => {
+        if (el.checked) {
+            genres.push(el.value);
+        }
+    });
+
+    let url = "/movies/filter/?";
+
+    if (language) {
+        url += "language=" + language + "&";
+    }
+
+    if (sort) {
+        url += "sort=" + sort + "&";
+    }
+
+    genres.forEach(g => {
+        url += "genres=" + g + "&";
+    });
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+
+        let movieContainer = document.getElementById("movie-list");
+
+        movieContainer.innerHTML = "";
+
+        data.movies.forEach(movie => {
+
+            movieContainer.innerHTML += `
+                <h3>${movie.title}</h3>
+                <p>Language: ${movie.language__name}</p>
+                <p>Rating: ${movie.rating}</p>
+                <p>Release Date: ${movie.release_date}</p>
+                <hr>
+            `;
+        });
+    });
+}
+
+</script>
+
+</body>
+</html>
